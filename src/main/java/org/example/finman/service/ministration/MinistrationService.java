@@ -14,4 +14,10 @@ public interface MinistrationService {
     void deleteMinistration(Long id);
 
     MinistrationDto updateMinistration(Long id, MinistrationDto ministrationDto);
+
+    void useService(long userId, long serviceId);
+
+    void setMinistrationActive(long id, boolean isActive);
+
+    void revokePermission(long userId, long serviceId);
 }

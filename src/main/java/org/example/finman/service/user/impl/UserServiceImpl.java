@@ -91,6 +91,13 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    @Override
+    public void increaseCredit(long id, double amount) {
+        SimpleUser user = (SimpleUser) userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        user.setCredit(user.getCredit() + amount);
+        userRepository.save(user);
+    }
 
     private UserDto convertToDto(User user) {
         UserDto userDto = new UserDto();
