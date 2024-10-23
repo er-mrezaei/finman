@@ -13,7 +13,7 @@ services:
     networks:
       - app-network
   app:
-    image: yourapp:latest
+    image: finman:latest
     build:
       context: .
       dockerfile: Dockerfile

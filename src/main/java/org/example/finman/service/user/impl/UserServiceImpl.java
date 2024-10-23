@@ -2,13 +2,22 @@ package org.example.finman.service.user.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.finman.domain.user.AdminUser;
+import org.example.finman.domain.user.SimpleUser;
 import org.example.finman.domain.user.User;
 import org.example.finman.dto.user.UserDto;
 import org.example.finman.repository.user.UserRepository;
 import org.example.finman.service.user.UserService;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +61,36 @@ public class UserServiceImpl implements UserService {
         userRepository.save(existingUser);
         return convertToDto(existingUser);
     }
+
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        if (!userOptional.isPresent()) {
+            throw new UsernameNotFoundException("User not found with username: " + username);
+        }
+
+        User user = userOptional.get();
+
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+
+        if (user instanceof AdminUser) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        } else if (user instanceof SimpleUser) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        }
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                true,
+                true,
+                true,
+                true,
+                authorities
+        );
+    }
+
 
     private UserDto convertToDto(User user) {
         UserDto userDto = new UserDto();
