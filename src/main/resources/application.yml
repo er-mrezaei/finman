@@ -3,5 +3,14 @@ spring:
     url: jdbc:mysql://localhost:3306/finmandb
     username: finman
     password: p@ssword
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
+    hibernate:
+      ddl-auto: none
     show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
