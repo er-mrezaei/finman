@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.finman.domain.ministration.Ministration;
 import org.example.finman.domain.ministration.Permission;
 import org.example.finman.dto.ministration.MinistrationDto;
+import org.example.finman.dto.ministration.ServiceUsageReportDto;
 import org.example.finman.repository.ministration.MinistrationRepository;
 import org.example.finman.repository.ministration.PermissionRepository;
 import org.example.finman.service.ministration.MinistrationService;
@@ -87,13 +88,33 @@ public class MinistrationServiceImpl implements MinistrationService {
     }
 
     @Override
-    public void revokePermission(long userId, long serviceId) {
-        Permission permission = permissionRepository.findByUserIdAndMinistrationId(userId, serviceId)
-                .orElseThrow(() -> new EntityNotFoundException("Permission not found"));
-        permission.setGranted(false);
-        permissionRepository.save(permission);
+    public List<ServiceUsageReportDto> getServiceUsageReport(long serviceId) {
+        Ministration service = ministrationRepository.findById(serviceId)
+                .orElseThrow(() -> new EntityNotFoundException("Service not found"));
+
+        List<Permission> permissions = permissionRepository.findByMinistrationId(serviceId);
+
+        return permissions.stream()
+                .map(permission -> new ServiceUsageReportDto(
+                        permission.getUser().getUsername(),
+                        permission.getUsageCount(),
+                        service.getName(),
+                        permission.getUser().getCredit()
+                )).toList();
     }
 
+    @Override
+    public List<ServiceUsageReportDto> getAllServiceUsageReports() {
+        List<Permission> permissions = permissionRepository.findAll();
+
+        return permissions.stream()
+                .map(permission -> new ServiceUsageReportDto(
+                        permission.getUser().getUsername(),
+                        permission.getUsageCount(),
+                        permission.getMinistration().getName(),
+                        permission.getUser().getCredit()
+                )).toList();
+    }
 
     private MinistrationDto convertToDto(Ministration ministration) {
         MinistrationDto ministrationDto = new MinistrationDto();

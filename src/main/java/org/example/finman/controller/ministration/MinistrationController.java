@@ -2,6 +2,7 @@ package org.example.finman.controller.ministration;
 
 import lombok.RequiredArgsConstructor;
 import org.example.finman.dto.ministration.MinistrationDto;
+import org.example.finman.dto.ministration.ServiceUsageReportDto;
 import org.example.finman.service.ministration.MinistrationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,19 +48,23 @@ public class MinistrationController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-
     @PutMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> activateMinistration(@PathVariable Long id, @RequestBody ActivateMinistration request) {
         ministrationService.setMinistrationActive(id, request.isActive());
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{id}/report")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PutMapping("/revoke-permission")
-    public ResponseEntity<Void> revokePermission(@RequestBody RevokePermission request) {
-        ministrationService.revokePermission(request.permissionId, request.userId);
-        return ResponseEntity.noContent().build();
+    public List<ServiceUsageReportDto> getServiceUsageReport(@PathVariable Long id) {
+        return ministrationService.getServiceUsageReport(id);
+    }
+
+    @GetMapping("/report/all")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public List<ServiceUsageReportDto> getAllServiceUsageReports() {
+        return ministrationService.getAllServiceUsageReports();
     }
 
     record RevokePermission(long userId, long permissionId) {

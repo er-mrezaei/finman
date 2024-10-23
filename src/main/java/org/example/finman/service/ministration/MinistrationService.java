@@ -1,6 +1,7 @@
 package org.example.finman.service.ministration;
 
 import org.example.finman.dto.ministration.MinistrationDto;
+import org.example.finman.dto.ministration.ServiceUsageReportDto;
 
 import java.util.List;
 
@@ -19,5 +20,7 @@ public interface MinistrationService {
 
     void setMinistrationActive(long id, boolean isActive);
 
-    void revokePermission(long userId, long serviceId);
+    List<ServiceUsageReportDto> getServiceUsageReport(long serviceId);
+
+    List<ServiceUsageReportDto> getAllServiceUsageReports();
 }
