@@ -23,4 +23,8 @@ public interface MinistrationService {
     List<ServiceUsageReportDto> getServiceUsageReport(long serviceId);
 
     List<ServiceUsageReportDto> getAllServiceUsageReports();
+
+    List<MinistrationDto> getAllowedServicesForUser(long userId);
+
+    List<MinistrationDto> getActiveServices();
 }

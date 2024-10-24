@@ -67,6 +67,26 @@ public class MinistrationController {
         return ministrationService.getAllServiceUsageReports();
     }
 
+    @GetMapping("/user/{userId}/allowed-services")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public List<MinistrationDto> getAllowedServicesForUser(@PathVariable Long userId) {
+        return ministrationService.getAllowedServicesForUser(userId);
+    }
+
+    @GetMapping("/active-services")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public List<MinistrationDto> getActiveServices() {
+        return ministrationService.getActiveServices();
+    }
+
+    @PostMapping("/user/{userId}/use-service/{serviceId}")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<Void> useService(@PathVariable Long userId, @PathVariable Long serviceId) {
+        ministrationService.useService(userId, serviceId);
+        return ResponseEntity.ok().build();
+    }
+
+
     record RevokePermission(long userId, long permissionId) {
     }
 

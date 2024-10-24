@@ -8,6 +8,9 @@ import java.util.Optional;
 
 public interface PermissionRepository extends JpaRepository<Permission, Long> {
     Optional<Permission> findByUserIdAndMinistrationId(long userId, long ministrationId);
+    Permission readByUserIdAndMinistrationId(long userId, long ministrationId);
 
     List<Permission> findByMinistrationId(long id);
+
+    List<Permission> findByUserIdAndGrantedTrue(long userId);
 }

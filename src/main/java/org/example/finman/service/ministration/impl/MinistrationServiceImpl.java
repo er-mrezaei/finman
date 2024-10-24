@@ -4,10 +4,12 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.finman.domain.ministration.Ministration;
 import org.example.finman.domain.ministration.Permission;
+import org.example.finman.domain.user.SimpleUser;
 import org.example.finman.dto.ministration.MinistrationDto;
 import org.example.finman.dto.ministration.ServiceUsageReportDto;
 import org.example.finman.repository.ministration.MinistrationRepository;
 import org.example.finman.repository.ministration.PermissionRepository;
+import org.example.finman.repository.user.UserRepository;
 import org.example.finman.service.ministration.MinistrationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import java.util.List;
 public class MinistrationServiceImpl implements MinistrationService {
     private final MinistrationRepository ministrationRepository;
     private final PermissionRepository permissionRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -64,18 +67,16 @@ public class MinistrationServiceImpl implements MinistrationService {
 
     @Override
     public void useService(long userId, long serviceId) {
-        Permission permission = permissionRepository.findByUserIdAndMinistrationId(userId, serviceId)
-                .orElseThrow(() -> new IllegalStateException("No permission granted for this service"));
-
-        if (!permission.isGranted()) {
-            throw new IllegalStateException("Permission is not granted for this service");
+        Permission permission = permissionRepository.readByUserIdAndMinistrationId(userId, serviceId);
+        Ministration service = permission.getMinistration();
+        SimpleUser user = permission.getUser();
+        if (user.getCredit() < service.getCostPerUse()) {
+            throw new IllegalStateException("Insufficient credit");
         }
 
-        if (permission.getUsageCount() >= permission.getMinistration().getMaxUsage()) {
-            throw new IllegalStateException("Max usage limit reached");
-        }
-
+        user.setCredit(user.getCredit() - service.getCostPerUse());
         permission.setUsageCount(permission.getUsageCount() + 1);
+        userRepository.save(user);
         permissionRepository.save(permission);
     }
 
@@ -115,6 +116,24 @@ public class MinistrationServiceImpl implements MinistrationService {
                         permission.getUser().getCredit()
                 )).toList();
     }
+
+    @Override
+    public List<MinistrationDto> getAllowedServicesForUser(long userId) {
+        List<Permission> permissions = permissionRepository.findByUserIdAndGrantedTrue(userId);
+
+        return permissions.stream()
+                .map(permission -> convertToDto(permission.getMinistration()))
+                .toList();
+    }
+
+    @Override
+    public List<MinistrationDto> getActiveServices() {
+        List<Ministration> activeServices = ministrationRepository.findByIsActiveTrue();
+        return activeServices.stream()
+                .map(this::convertToDto)
+                .toList();
+    }
+
 
     private MinistrationDto convertToDto(Ministration ministration) {
         MinistrationDto ministrationDto = new MinistrationDto();
